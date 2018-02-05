@@ -1,4 +1,5 @@
 import heapq
+import sys
 
 class Activity(object):
 	'''
@@ -26,6 +27,7 @@ class LectureHall(object):
 	
 	class methods:
 	first_available_time()
+	reset()
 
 	instance attributes:
 	activities : list of Activity objs assigned to the instance
@@ -43,13 +45,20 @@ class LectureHall(object):
 	available_times = [] 
 
 
-	@staticmethod
-	def first_available_time():
+	@classmethod
+	def first_available_time(c):
 		'''
 		returns top of LectureHall.end_times min heap, without popping it off
 		'''
 		return LectureHall.available_times[0]
 
+	@classmethod
+	def reset(c):
+		'''
+		resets all class attributes
+		'''
+		LectureHall.count = 0
+		LectureHall.available_times = []
 
 	def __init__(self, activity):
 		'''
@@ -97,6 +106,10 @@ def AssignActivities(file_name):
 	of those activities {s,f}
 	'''
 
+	# reset LectureHall class variables so that you can run
+	# different inputs in succession on shell
+	LectureHall.reset() 
+
 	activities = []
 	lecture_halls = {}
 
@@ -108,16 +121,14 @@ def AssignActivities(file_name):
 
 	activity_data = [a.strip().split(',') for a in doc[1:]]
 
+	# put all Activity objects in a list
 	for i in range(0,n):
 		activities.append(Activity(activity_data[i][0],activity_data[i][1]))
 	
 	# sort activities by their start times
 	activities.sort(key=lambda a : a.s)
 	
-	print 'number of activities:', len(activities)
-
 	for a in activities:
-		print LectureHall.available_times
 		if not LectureHall.available_times or LectureHall.first_available_time()[0] > a.s:
 			# if there aren't any schedule activities yet
 			# or the one with the earliest end time is later than this activity's start
@@ -133,7 +144,7 @@ def AssignActivities(file_name):
 			lecture_halls[key].assign(a)
 
 
-
+	# print the final assignments
 	for key in lecture_halls:
 		print key 
 		for a in lecture_halls[key].activities:
@@ -141,6 +152,8 @@ def AssignActivities(file_name):
 
 
 
-
-#AssignActivities('a.txt')
-AssignActivities('b.txt')
+#
+# run it from cmd line if filename arg is given
+#
+if len(sys.argv) > 1:
+	AssignActivities(sys.argv[1])
