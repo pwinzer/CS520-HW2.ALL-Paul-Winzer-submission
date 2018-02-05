@@ -1,0 +1,146 @@
+import heapq
+
+class Activity(object):
+	'''
+	represents an activity to be assigned to a LectureHall
+
+	instance attributes:
+	s : int, start time
+	f : int, finish time
+	'''
+
+	def __init__(self, start, finish):
+		self.s = int(start)
+		self.f = int(finish)
+
+
+
+class LectureHall(object):
+	'''
+	class that represents a lecture hall
+	for the purposes of assigning Activity objs
+
+	class attributes:
+	count : int, incrementer used to give instances unique ids
+	available_times : min heap, latest Activity finish time for each LectureHall
+	
+	class methods:
+	first_available_time()
+
+	instance attributes:
+	activities : list of Activity objs assigned to the instance
+
+	instance methods:
+	__init__(Activity)
+	assign(Activity)
+
+	'''
+
+	# number of LectureHalls, used to give them int IDs
+	count = 0
+
+	# min heap
+	available_times = [] 
+
+
+	@staticmethod
+	def first_available_time():
+		'''
+		returns top of LectureHall.end_times min heap, without popping it off
+		'''
+		return LectureHall.available_times[0]
+
+
+	def __init__(self, activity):
+		'''
+		initialize by adding Activity to instance's list
+		and pushing the activity's finish time onto available_times
+		'''
+		self.activities = [activity]
+
+		self.id = str(LectureHall.count)
+		LectureHall.count = LectureHall.count + 1
+	
+		time_tup = (activity.f,self.id)
+		heapq.heappush(LectureHall.available_times,time_tup)
+
+
+	def assign(self, activity):
+		'''
+		append Activity to the LectureHall instance's activites list
+		and replace the top of the heap with the new available time 
+		'''
+		self.activities.append(activity)
+
+		time_tup = (activity.f, self.id)
+		heapq.heapreplace(LectureHall.available_times,time_tup)
+
+
+
+
+def AssignActivities(file_name):
+	'''
+	Greedy algorithm to assign Activitys to LectureHalls
+	based on the machine scheduling problem
+
+	params
+	file_name : str, containing the path to a file of the following format
+
+	{n}
+	{s1,f1}
+	{s2,f2}
+	...
+	{sn,fn}
+
+	where {n} is the number of activities to be assigned
+	and all n lines afterward contain the start and finish times
+	of those activities {s,f}
+	'''
+
+	activities = []
+	lecture_halls = {}
+
+
+	with open(file_name) as f:
+		doc = f.readlines()
+	
+	n = int(doc[0])
+
+	activity_data = [a.strip().split(',') for a in doc[1:]]
+
+	for i in range(0,n):
+		activities.append(Activity(activity_data[i][0],activity_data[i][1]))
+	
+	# sort activities by their start times
+	activities.sort(key=lambda a : a.s)
+	
+	print 'number of activities:', len(activities)
+
+	for a in activities:
+		print LectureHall.available_times
+		if not LectureHall.available_times or LectureHall.first_available_time()[0] > a.s:
+			# if there aren't any schedule activities yet
+			# or the one with the earliest end time is later than this activity's start
+			# assign the activity to a new lecture hall
+			# and key the lecture hall into the dict
+			lh = LectureHall(a)
+			lecture_halls[lh.id] = lh
+
+		else:
+			# get the lecture hall key from the top of the min heap of times
+			# and assign this activity to that key's entry in the dictionary
+			key = LectureHall.first_available_time()[1]
+			lecture_halls[key].assign(a)
+
+
+
+	for key in lecture_halls:
+		print key 
+		for a in lecture_halls[key].activities:
+			print a.s,a.f
+
+
+
+
+#AssignActivities('a.txt')
+AssignActivities('b.txt')
