@@ -9,3 +9,5 @@ these files are of the format:
 where the first line is the number of tasks to be scheduled and the following lines are all 'start,end' times for that task
 
 io_example.png shows how to run the algorithm from the shell using a.txt and b.txt as file inputs, along with the output
+
+runs on python 2.7
